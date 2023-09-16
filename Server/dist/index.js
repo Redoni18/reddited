@@ -16,7 +16,7 @@ const post_1 = require("./resolvers/post");
 const main = async () => {
     const orm = await core_1.MikroORM.init(mikro_orm_config_1.default);
     await orm.getMigrator().up();
-    const em = orm.em.fork();
+    orm.em.fork();
     const app = (0, express_1.default)();
     const cors = require('cors');
     const schema = await (0, type_graphql_1.buildSchema)({

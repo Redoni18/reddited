@@ -15,7 +15,7 @@ const main = async () => {
     const orm = await MikroORM.init(microConfig);
     await orm.getMigrator().up()
 
-    const em = orm.em.fork();
+    orm.em.fork();
 
     const app = express();
     const cors = require('cors')
