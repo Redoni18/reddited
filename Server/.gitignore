@@ -4,3 +4,5 @@ constants.ts
 
 *.log
 *.env
+
+.DS_Store
