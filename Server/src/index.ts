@@ -10,6 +10,7 @@ import { HelloResolver } from "./resolvers/hello";
 import { json } from "body-parser";
 import { expressMiddleware } from "@apollo/server/express4";
 import { PostResolver } from "./resolvers/post";
+import { UserResolver } from './resolvers/user';
 
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
@@ -22,7 +23,7 @@ const main = async () => {
 
 
     const schema:GraphQLSchema = await buildSchema({
-        resolvers: [HelloResolver, PostResolver],
+        resolvers: [HelloResolver, PostResolver, UserResolver],
         validate: false,
     })
 
