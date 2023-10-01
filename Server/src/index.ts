@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { MikroORM } from "@mikro-orm/core";
-import { __prod__, __secret__ } from "./constants";
+import { __dbHost__, __dbName__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
 import microConfig from "./mikro-orm.config"
 import express from "express"
 import { ApolloServer } from "@apollo/server"
@@ -14,6 +14,7 @@ import { UserResolver } from './resolvers/user';
 import session from "express-session"
 import connectPgSimple from "connect-pg-simple"
 import pg from "pg"
+import { MyContext } from './types';
 
 
 const main = async () => {
@@ -28,10 +29,10 @@ const main = async () => {
     const pgSession = connectPgSimple(session);
 
     const pgPool = new pg.Pool({
-        user: 'your-db-user',
-        host: 'your-db-host',
-        database: 'your-db-name',
-        password: 'your-db-password',
+        user: __dbUser__,
+        host: __dbHost__,
+        database: __dbName__,
+        password: __dbPassword__,
         port: 5432,
     });
 
@@ -40,7 +41,7 @@ const main = async () => {
         store: new pgSession({
             pool : pgPool,
             disableTouch: true,
-            tableName : 'user_sessions'
+            createTableIfMissing: true
         }),
         secret: __secret__,
         resave: false,
@@ -49,8 +50,9 @@ const main = async () => {
             httpOnly: true,
             secure: __prod__, //cookie only works in https,
             sameSite: 'lax'
-        } // 30 days
+        }, // 30 days
         // Insert express-session options here
+        saveUninitialized: false
     }));
 
 
@@ -70,7 +72,7 @@ const main = async () => {
         json(),
         cors(),
         expressMiddleware(apolloServer, {
-            context: async () => ({ em: orm.em })
+            context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res })
         }),
     );
 
