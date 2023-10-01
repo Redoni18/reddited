@@ -33,23 +33,108 @@ __decorate([
 UserPasswordInput = __decorate([
     (0, type_graphql_1.InputType)()
 ], UserPasswordInput);
+let FieldError = class FieldError {
+};
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], FieldError.prototype, "field", void 0);
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], FieldError.prototype, "message", void 0);
+FieldError = __decorate([
+    (0, type_graphql_1.ObjectType)()
+], FieldError);
+let UserResponse = class UserResponse {
+};
+__decorate([
+    (0, type_graphql_1.Field)(() => [FieldError], { nullable: true }),
+    __metadata("design:type", Array)
+], UserResponse.prototype, "errors", void 0);
+__decorate([
+    (0, type_graphql_1.Field)(() => User_1.User, { nullable: true }),
+    __metadata("design:type", User_1.User)
+], UserResponse.prototype, "user", void 0);
+UserResponse = __decorate([
+    (0, type_graphql_1.ObjectType)()
+], UserResponse);
 let UserResolver = class UserResolver {
     async register(options, { em }) {
+        if (options.username.length <= 2) {
+            return {
+                errors: [{
+                        field: "username",
+                        message: "username length must be greater than 2"
+                    }]
+            };
+        }
+        if (options.password.length <= 8) {
+            return {
+                errors: [{
+                        field: "username",
+                        message: "password length must be greater than 8"
+                    }]
+            };
+        }
         const hashedPassword = await bcrypt_1.default.hash(options.password, constants_1.__saltRounds__);
         const user = em.create(User_1.User, { username: options.username, password: hashedPassword });
-        await em.persistAndFlush(user);
-        return user;
+        try {
+            await em.persistAndFlush(user);
+        }
+        catch (err) {
+            if (err.code === "23505" || err.detail.includes("already exists")) {
+                return {
+                    errors: [{
+                            field: "Username",
+                            message: `Username ${options.username} already exists`
+                        }]
+                };
+            }
+        }
+        return { user };
+    }
+    async login(options, { em }) {
+        const user = await em.findOne(User_1.User, {
+            username: options.username
+        });
+        if (!user) {
+            return {
+                errors: [{
+                        field: "username",
+                        message: "Username does not exist"
+                    }]
+            };
+        }
+        const validPassword = bcrypt_1.default.compareSync(options.password, user.password);
+        if (!validPassword) {
+            return {
+                errors: [{
+                        field: "password",
+                        message: "Password is incorrect"
+                    }]
+            };
+        }
+        return { user };
     }
 };
 exports.UserResolver = UserResolver;
 __decorate([
-    (0, type_graphql_1.Mutation)(() => User_1.User),
+    (0, type_graphql_1.Mutation)(() => UserResponse),
     __param(0, (0, type_graphql_1.Arg)('options', () => UserPasswordInput)),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [UserPasswordInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "register", null);
+__decorate([
+    (0, type_graphql_1.Mutation)(() => UserResponse),
+    __param(0, (0, type_graphql_1.Arg)('options', () => UserPasswordInput)),
+    __param(1, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [UserPasswordInput, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "login", null);
 exports.UserResolver = UserResolver = __decorate([
     (0, type_graphql_1.Resolver)()
 ], UserResolver);
