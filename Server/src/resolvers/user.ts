@@ -11,6 +11,16 @@ class UserPasswordInput {
     username: string
     @Field()
     password: string
+    @Field()
+    email: string
+}
+
+@InputType()
+class UserLoginInput {
+    @Field()
+    email: string
+    @Field()
+    password: string
 }
 
 @ObjectType()
@@ -50,6 +60,9 @@ export class UserResolver {
         @Arg('options', () => UserPasswordInput) options: UserPasswordInput,
         @Ctx() { em, req }: MyContext
     ): Promise<UserResponse> {
+
+        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
         if(options.username.length <= 2) {
             return {
                 errors: [{
@@ -58,6 +71,25 @@ export class UserResolver {
                 }]
             }
         }
+
+        if(options.email.length <= 4) {
+            return {
+                errors: [{
+                    field: "email",
+                    message: "email length must be greater than 4 characters"
+                }]
+            }
+        } else {
+            if(!emailRegex.test(options.email)) {
+                return {
+                    errors: [{
+                        field: "email",
+                        message: "please type a valid email"
+                    }]
+                }
+            }
+        }
+
 
         if(options.password.length <= 8) {
             return {
@@ -70,12 +102,12 @@ export class UserResolver {
 
         const hashedPassword = await bcrypt.hash(options.password, __saltRounds__)
         
-        const user =  em.create(User, { username: options.username, password: hashedPassword } as RequiredEntityData<User>)
+        const user =  em.create(User, { username: options.username, email: options.email, password: hashedPassword } as RequiredEntityData<User>)
         
+        await em.persistAndFlush(user)
         try {
-            await em.persistAndFlush(user)
         } catch (err) {
-            if(err.code === "23505" || err.detail.includes("already exists")) {
+            if(err.code === "23505" || err.detail?.includes("already exists")) {
                 return {
                     errors: [{
                         field: "Username",
@@ -92,18 +124,18 @@ export class UserResolver {
 
     @Mutation(() => UserResponse)
     async login(
-        @Arg('options', () => UserPasswordInput) options: UserPasswordInput,
+        @Arg('options', () => UserLoginInput) options: UserLoginInput,
         @Ctx() { em, req }: MyContext
     ): Promise<UserResponse> {
         const user = await em.findOne(User, {
-            username: options.username
+            email: options.email
         })
 
         if(!user) {
             return {
                 errors: [{
-                    field: "username",
-                    message: "Username does not exist"
+                    field: "email",
+                    message: "email does not exist"
                 }]
             }
         }

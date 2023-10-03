@@ -30,9 +30,26 @@ __decorate([
     (0, type_graphql_1.Field)(),
     __metadata("design:type", String)
 ], UserPasswordInput.prototype, "password", void 0);
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], UserPasswordInput.prototype, "email", void 0);
 UserPasswordInput = __decorate([
     (0, type_graphql_1.InputType)()
 ], UserPasswordInput);
+let UserLoginInput = class UserLoginInput {
+};
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], UserLoginInput.prototype, "email", void 0);
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], UserLoginInput.prototype, "password", void 0);
+UserLoginInput = __decorate([
+    (0, type_graphql_1.InputType)()
+], UserLoginInput);
 let FieldError = class FieldError {
 };
 __decorate([
@@ -68,6 +85,8 @@ let UserResolver = class UserResolver {
         return user;
     }
     async register(options, { em, req }) {
+        var _a;
+        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
         if (options.username.length <= 2) {
             return {
                 errors: [{
@@ -75,6 +94,24 @@ let UserResolver = class UserResolver {
                         message: "username length must be greater than 2"
                     }]
             };
+        }
+        if (options.email.length <= 4) {
+            return {
+                errors: [{
+                        field: "email",
+                        message: "email length must be greater than 4 characters"
+                    }]
+            };
+        }
+        else {
+            if (!emailRegex.test(options.email)) {
+                return {
+                    errors: [{
+                            field: "email",
+                            message: "please type a valid email"
+                        }]
+                };
+            }
         }
         if (options.password.length <= 8) {
             return {
@@ -85,12 +122,12 @@ let UserResolver = class UserResolver {
             };
         }
         const hashedPassword = await bcrypt_1.default.hash(options.password, constants_1.__saltRounds__);
-        const user = em.create(User_1.User, { username: options.username, password: hashedPassword });
+        const user = em.create(User_1.User, { username: options.username, email: options.email, password: hashedPassword });
+        await em.persistAndFlush(user);
         try {
-            await em.persistAndFlush(user);
         }
         catch (err) {
-            if (err.code === "23505" || err.detail.includes("already exists")) {
+            if (err.code === "23505" || ((_a = err.detail) === null || _a === void 0 ? void 0 : _a.includes("already exists"))) {
                 return {
                     errors: [{
                             field: "Username",
@@ -104,13 +141,13 @@ let UserResolver = class UserResolver {
     }
     async login(options, { em, req }) {
         const user = await em.findOne(User_1.User, {
-            username: options.username
+            email: options.email
         });
         if (!user) {
             return {
                 errors: [{
-                        field: "username",
-                        message: "Username does not exist"
+                        field: "email",
+                        message: "email does not exist"
                     }]
             };
         }
@@ -145,10 +182,10 @@ __decorate([
 ], UserResolver.prototype, "register", null);
 __decorate([
     (0, type_graphql_1.Mutation)(() => UserResponse),
-    __param(0, (0, type_graphql_1.Arg)('options', () => UserPasswordInput)),
+    __param(0, (0, type_graphql_1.Arg)('options', () => UserLoginInput)),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [UserPasswordInput, Object]),
+    __metadata("design:paramtypes", [UserLoginInput, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolver.prototype, "login", null);
 exports.UserResolver = UserResolver = __decorate([
