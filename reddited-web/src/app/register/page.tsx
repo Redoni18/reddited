@@ -3,13 +3,12 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Input } from "../../components/ui/input"
-
+import { Loader2 } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -23,30 +22,50 @@ import {
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
 
+import { gql, useMutation } from '@apollo/client';
+
+const REGISTER_MUTATION = gql`
+    mutation Mutation($username: String!, $email: String!, $password: String!) {
+        register(options: { username: $username, email: $email, password: $password}) {
+            errors {
+                field,
+                message
+            },
+            user {
+                id,
+                username,
+                email,
+                createdAt,
+                updatedAt
+            }
+        }
+    }
+`;
+
 const accountFormSchema = z.object({
-  name: z
-    .string({
-        required_error: "Username is required"
-    })
-    .min(3, {
-      message: "Username must be at least 3 characters.",
+    username: z
+        .string({
+            required_error: "Username is required"
+        })
+        .min(3, {
+        message: "Username must be at least 3 characters.",
+        }),
+    email: z.string({
+        required_error: "Email address is required",
     }),
-  email: z.string({
-    required_error: "Email address is required",
-  }),
-  password: z
-    .string({
-        required_error: "Password is required",
-    })
-    .min(9, {
-        message: "Password must have at least 9 characters"
-    })
+    password: z
+        .string({
+            required_error: "Password is required",
+        })
+        .min(9, {
+            message: "Password must have at least 9 characters"
+        })
 })
 
 type RegisterProps = z.infer<typeof accountFormSchema>
 
 const defaultValues: Partial<RegisterProps> = {
-    name: "",
+    username: "",
     email: "",
     password: ""
 }
@@ -54,18 +73,31 @@ const defaultValues: Partial<RegisterProps> = {
 
 const Register: React.FC<RegisterProps> = ({}) => {
 
+    const [registerFunction, { loading }] = useMutation(REGISTER_MUTATION);
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
     })
 
-    function onSubmit() {
-       console.log('sdf')
-    }
+    const onSubmit = (registerData: RegisterProps) => {
+        try {
+            registerFunction({
+                variables: {
+                    username: registerData.username,
+                    email: registerData.email,
+                    password: registerData.password
+                }
+            })
+          // Handle the response data as needed
+        } catch (error) {
+          // Handle any errors here
+          console.error(error);
+        }
+    };
 
     return (
         <Wrapper variant="regular">
-            <Card className="w-full mx-auto">
+            <Card className="w-3/4 mx-auto">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl">Create an account</CardTitle>
                     <CardDescription>
@@ -87,7 +119,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                             <FormField
                                 control={form.control}
-                                name="name"
+                                name="username"
                                 render={({ field }) => (
                                 <div>
                                     <FormLabel htmlFor="name">Username</FormLabel>
@@ -124,12 +156,20 @@ const Register: React.FC<RegisterProps> = ({}) => {
                                 )}
                             />
 
-                            <Button className="w-full">Create account</Button>
+                            {!loading
+                                ?
+                                <Button className="w-full">Create account</Button>
+                                :
+                                <Button className="w-full" disabled>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Please wait
+                                </Button>
+                            }
                         </form>
                     </Form>
                 </CardContent>
-        </Card>
-      </Wrapper>
+            </Card>
+        </Wrapper>
     )
 }
 
