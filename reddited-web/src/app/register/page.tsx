@@ -21,26 +21,7 @@ import {
 } from "../../components/ui/form"
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
-
-import { gql, useMutation } from '@apollo/client';
-
-const REGISTER_MUTATION = gql`
-    mutation Mutation($username: String!, $email: String!, $password: String!) {
-        register(options: { username: $username, email: $email, password: $password}) {
-            errors {
-                field,
-                message
-            },
-            user {
-                id,
-                username,
-                email,
-                createdAt,
-                updatedAt
-            }
-        }
-    }
-`;
+import { useRegisterMutation } from "@/gql/grapqhql";
 
 const accountFormSchema = z.object({
     username: z
@@ -73,7 +54,7 @@ const defaultValues: Partial<RegisterProps> = {
 
 const Register: React.FC<RegisterProps> = ({}) => {
 
-    const [registerFunction, { loading }] = useMutation(REGISTER_MUTATION);
+    const [registerFunction, { loading }] = useRegisterMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
