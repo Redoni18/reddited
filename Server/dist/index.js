@@ -54,11 +54,14 @@ const main = async () => {
         validate: false,
     });
     const apolloServer = new server_1.ApolloServer({
-        schema
+        schema,
     });
     await apolloServer.start();
-    app.use('/graphql', (0, body_parser_1.json)(), cors(), (0, express4_1.expressMiddleware)(apolloServer, {
-        context: async ({ req, res }) => ({ em: orm.em, req, res })
+    app.use('/graphql', (0, body_parser_1.json)(), cors({
+        origin: ['http://localhost:3000'],
+        credentials: true,
+    }), (0, express4_1.expressMiddleware)(apolloServer, {
+        context: async ({ req, res }) => ({ em: orm.em, req, res }),
     }));
     app.listen(8000, () => {
         console.log('server started on port 8000');

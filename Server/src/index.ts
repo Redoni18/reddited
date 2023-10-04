@@ -16,7 +16,6 @@ import connectPgSimple from "connect-pg-simple"
 import pg from "pg"
 import { MyContext } from './types';
 
-
 const main = async () => {
     const orm = await MikroORM.init(microConfig);
     await orm.getMigrator().up()
@@ -62,7 +61,7 @@ const main = async () => {
     })
 
     const apolloServer = new ApolloServer({
-        schema
+        schema,
     });
 
     await apolloServer.start();
@@ -70,9 +69,12 @@ const main = async () => {
     app.use(
         '/graphql',
         json(),
-        cors(),
+        cors({ 
+            origin: ['http://localhost:3000'],
+            credentials: true,
+        }),
         expressMiddleware(apolloServer, {
-            context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res })
+            context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res }),
         }),
     );
 
