@@ -5,6 +5,7 @@ import * as z from "zod"
 import { Input } from "../../components/ui/input"
 import { Loader2 } from "lucide-react"
 import { Button } from "../../components/ui/button"
+import { Icons } from "../../components/ui/icons"
 import {
   Card,
   CardContent,
@@ -23,20 +24,12 @@ import {
 } from "../../components/ui/form"
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
-import { useRegisterMutation } from "@/gql/grapqhql";
 import { useRouter } from 'next/navigation'
-import { Icons } from "@/components/ui/icons";
+import { useLoginMutation } from "@/gql/grapqhql";
 import Link from "next/link";
 
 
 const accountFormSchema = z.object({
-    username: z
-        .string({
-            required_error: "Username is required"
-        })
-        .min(3, {
-            message: "Username must be at least 3 characters.",
-        }),
     email: z.
         string({
             required_error: "Email address is required",
@@ -54,15 +47,14 @@ const accountFormSchema = z.object({
 type RegisterProps = z.infer<typeof accountFormSchema>
 
 const defaultValues: Partial<RegisterProps> = {
-    username: "",
     email: "",
     password: ""
 }
 
 
-const Register: React.FC<RegisterProps> = ({}) => {
+const Login: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
-    const [registerFunction, { loading }] = useRegisterMutation(); //generated custom hook from graphql code generator
+    const [registerFunction, { loading }] = useLoginMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
@@ -72,13 +64,12 @@ const Register: React.FC<RegisterProps> = ({}) => {
         try {
             const response = await registerFunction({
                 variables: {
-                    username: registerData.username,
                     email: registerData.email,
                     password: registerData.password
                 }
             })
 
-            if(response.data?.register.user) {
+            if(response.data?.login.user) {
                 router.push('/', {scroll: false})
             } else {
                 console.log("err: ", response)
@@ -93,10 +84,10 @@ const Register: React.FC<RegisterProps> = ({}) => {
     return (
         <Wrapper variant="regular">
             <Card className="w-3/4 mx-auto">
-                <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-2xl">Create an account</CardTitle>
+                <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl">Login to your account</CardTitle>
                     <CardDescription>
-                        Enter your email below to create your account
+                        Enter your email and password below to login to your account
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4">
@@ -122,20 +113,6 @@ const Register: React.FC<RegisterProps> = ({}) => {
                     </div>
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                            <FormField
-                                control={form.control}
-                                name="username"
-                                render={({ field }) => (
-                                <div>
-                                    <FormLabel htmlFor="name">Username</FormLabel>
-                                    <FormControl>
-                                        <Input placeholder="Username" {...field} type="text" id="name" />
-                                    </FormControl>
-                                    <FormMessage className="mt-2" />
-                                </div>
-                                )}
-                            />
-
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -166,7 +143,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
 
                             {!loading
                                 ?
-                                <Button className="w-full">Create account</Button>
+                                <Button className="w-full">Sign In</Button>
                                 :
                                 <Button className="w-full" disabled>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -178,7 +155,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
                 </CardContent>
                 <CardFooter>
                     <CardDescription className="mx-auto">
-                        Already have an account? <Link href="/login" className="text-sky-300">Login!</Link>
+                        Don't have an account? <Link href="/register" className="text-sky-300">Register here!</Link>
                     </CardDescription>
                 </CardFooter>
             </Card>
@@ -186,4 +163,4 @@ const Register: React.FC<RegisterProps> = ({}) => {
     )
 }
 
-export default Register;
+export default Login;
