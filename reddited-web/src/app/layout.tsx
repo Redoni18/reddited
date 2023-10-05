@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ApolloWrapper } from './ApolloWrapper';
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets:['latin'] })
 
 export const metadata: Metadata = {
   title: 'Reddited: Reddit Clone',
@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html className='dark container mx-auto h-full box-border' lang="en">
-      <body className={`${inter.className} h-full flex items-center`}>
+      <body className={`${inter.className} p-8`}>
         <ApolloWrapper>{children}</ApolloWrapper>
       </body>
     </html>
