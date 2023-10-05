@@ -1,5 +1,5 @@
 "use client"
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Input } from "../../components/ui/input"
@@ -27,20 +27,19 @@ import { useForm } from "react-hook-form"
 import { useRouter } from 'next/navigation'
 import { useLoginMutation } from "@/gql/grapqhql";
 import Link from "next/link";
+import constructSetError from "@/lib/toErrorMap";
+import { useToast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster";
 
 
 const accountFormSchema = z.object({
     email: z.
         string({
             required_error: "Email address is required",
-        })
-        .email("This is not a valid email"),   
+        }),
     password: z
         .string({
             required_error: "Password is required",
-        })
-        .min(9, {
-            message: "Password must have at least 9 characters"
         })
 })
 
@@ -54,11 +53,14 @@ const defaultValues: Partial<RegisterProps> = {
 
 const Login: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
+    const [allErrors, setAllErrors] = useState<Record<string, string>>()
     const [registerFunction, { loading }] = useLoginMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
     })
+
+    const { toast } = useToast()
 
     const onSubmit = async (registerData: RegisterProps) => {
         try {
@@ -72,7 +74,8 @@ const Login: React.FC<RegisterProps> = ({}) => {
             if(response.data?.login.user) {
                 router.push('/', {scroll: false})
             } else {
-                console.log("err: ", response)
+                const errors = response.data?.login?.errors || [];
+                setAllErrors(constructSetError(errors))
             }
           // Handle the response data as needed
         } catch (error) {
@@ -80,6 +83,19 @@ const Login: React.FC<RegisterProps> = ({}) => {
           console.error(error);
         }
     };
+    
+    useEffect(() => {
+        console.log(allErrors)
+        if(allErrors) {
+            toast({
+                duration: 4000,
+                variant: "destructive",
+                title: allErrors.field,
+                description: allErrors.message,
+            })
+        }
+    }, [allErrors]);
+      
 
     return (
         <Wrapper variant="regular">
@@ -159,6 +175,7 @@ const Login: React.FC<RegisterProps> = ({}) => {
                     </CardDescription>
                 </CardFooter>
             </Card>
+            <Toaster />
         </Wrapper>
     )
 }
