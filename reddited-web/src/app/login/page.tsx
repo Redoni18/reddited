@@ -171,7 +171,7 @@ const Login: React.FC<RegisterProps> = ({}) => {
                 </CardContent>
                 <CardFooter>
                     <CardDescription className="mx-auto">
-                        Don't have an account? <Link href="/register" className="text-sky-300">Register here!</Link>
+                        Don&apos;t have an account? <Link href="/register" className="text-sky-300">Register here!</Link>
                     </CardDescription>
                 </CardFooter>
             </Card>
