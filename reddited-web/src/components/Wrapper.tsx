@@ -8,7 +8,7 @@ interface WrapperProps {
 
 const Wrapper: React.FC<WrapperProps> = ({variant, children, className}) => {
     return (
-        <div className={`${variant === 'regular' ? 'w-3/4' : 'w-1/2'} mx-auto ${className}`}>{children}</div>
+        <div className={`${variant === 'regular' ? 'w-full' : 'w-3/4'} mx-auto ${className}`}>{children}</div>
     )
 }
 

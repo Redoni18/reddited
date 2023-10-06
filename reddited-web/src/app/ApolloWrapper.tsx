@@ -8,9 +8,10 @@ import {
   NextSSRApolloClient,
   SSRMultipartLink,
 } from "@apollo/experimental-nextjs-app-support/ssr";
+import { SessionStorageWrapper, persistCache } from "apollo3-cache-persist"
 
-// have a function to create a client for you
 function makeClient() {
+
   const httpLink = new HttpLink({
     // this needs to be an absolute url, as relative urls cannot be used in SSR
     uri: "http://localhost:8000/graphql",
@@ -26,15 +27,18 @@ function makeClient() {
     // const { data } = useSuspenseQuery(MY_QUERY, { context: { fetchOptions: { cache: "force-cache" }}});
   });
 
+  const cache = new NextSSRInMemoryCache()
+
+  if(typeof window !== 'undefined') {
+    persistCache({
+      cache,
+      storage: new SessionStorageWrapper(window.localStorage)
+    });
+  }
+
   return new NextSSRApolloClient({
     // use the `NextSSRInMemoryCache`, not the normal `InMemoryCache`
-    cache: new NextSSRInMemoryCache({
-      typePolicies: {
-        User: {
-          keyFields: ["id", "username", "email"]
-        },
-      }
-    }),
+    cache: new NextSSRInMemoryCache(),
     link:
       typeof window === "undefined"
         ? ApolloLink.from([

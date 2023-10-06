@@ -54,7 +54,7 @@ const defaultValues: Partial<RegisterProps> = {
 const Login: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
     const [allErrors, setAllErrors] = useState<Record<string, string>>()
-    const [registerFunction, { loading, client }] = useLoginMutation(); //generated custom hook from graphql code generator
+    const [registerFunction, { loading }] = useLoginMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
@@ -72,7 +72,6 @@ const Login: React.FC<RegisterProps> = ({}) => {
             })
 
             if(response.data?.login.user) {
-                client.clearStore()
                 router.push('/', {scroll: false})
             } else {
                 const errors = response.data?.login?.errors || [];
@@ -86,7 +85,6 @@ const Login: React.FC<RegisterProps> = ({}) => {
     };
     
     useEffect(() => {
-        console.log(allErrors)
         if(allErrors) {
             toast({
                 duration: 4000,
@@ -101,7 +99,7 @@ const Login: React.FC<RegisterProps> = ({}) => {
 
     return (
         <Wrapper variant="regular" className="flex items-center h-full">
-            <Card className="w-3/4 mx-auto">
+            <Card className="mx-auto">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl">Login to your account</CardTitle>
                     <CardDescription>
