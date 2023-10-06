@@ -62,7 +62,7 @@ const defaultValues: Partial<RegisterProps> = {
 
 const Register: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
-    const [registerFunction, { loading }] = useRegisterMutation(); //generated custom hook from graphql code generator
+    const [registerFunction, { loading, client }] = useRegisterMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
@@ -79,6 +79,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
             })
 
             if(response.data?.register.user) {
+                client.clearStore()
                 router.push('/', {scroll: false})
             } else {
                 console.log("err: ", response)

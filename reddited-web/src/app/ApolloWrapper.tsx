@@ -17,7 +17,7 @@ function makeClient() {
     // you can disable result caching here if you want to
     // (this does not work if you are rendering your page with `export const dynamic = "force-static"`)
     fetchOptions: { 
-        cache: "no-store",
+        cache: "force-cache",
         credentials: "include"
     },
     // you can override the default `fetchOptions` on a per query basis
@@ -28,7 +28,13 @@ function makeClient() {
 
   return new NextSSRApolloClient({
     // use the `NextSSRInMemoryCache`, not the normal `InMemoryCache`
-    cache: new NextSSRInMemoryCache(),
+    cache: new NextSSRInMemoryCache({
+      typePolicies: {
+        User: {
+          keyFields: ["id", "username", "email"]
+        },
+      }
+    }),
     link:
       typeof window === "undefined"
         ? ApolloLink.from([
