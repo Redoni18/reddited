@@ -94,11 +94,12 @@ const Login: React.FC<RegisterProps> = ({}) => {
                 description: allErrors.message,
             })
         }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [allErrors]);
       
 
     return (
-        <Wrapper variant="regular">
+        <Wrapper variant="regular" className="flex items-center h-full">
             <Card className="w-3/4 mx-auto">
                 <CardHeader className="space-y-1">
                     <CardTitle className="text-2xl">Login to your account</CardTitle>

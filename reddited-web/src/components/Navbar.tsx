@@ -4,116 +4,112 @@ import * as React from "react"
 import Link from "next/link"
 
 import { cn } from "../lib/utils"
-import { Icons } from "./ui/icons"
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
-//   navigationMenuTriggerStyle,
+  navigationMenuTriggerStyle,
 } from "./ui/navigation-menu"
+import { MeQuery, useMeQuery } from "@/gql/grapqhql"
 
-const components: { title: string; href: string; description: string }[] = [
-  {
-    title: "Alert Dialog",
-    href: "/docs/primitives/alert-dialog",
-    description:
-      "A modal dialog that interrupts the user with important content and expects a response.",
-  },
-  {
-    title: "Hover Card",
-    href: "/docs/primitives/hover-card",
-    description:
-      "For sighted users to preview content available behind a link.",
-  },
-  {
-    title: "Progress",
-    href: "/docs/primitives/progress",
-    description:
-      "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-  },
-  {
-    title: "Scroll-area",
-    href: "/docs/primitives/scroll-area",
-    description: "Visually or semantically separates content.",
-  },
-  {
-    title: "Tabs",
-    href: "/docs/primitives/tabs",
-    description:
-      "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-  },
-  {
-    title: "Tooltip",
-    href: "/docs/primitives/tooltip",
-    description:
-      "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-  },
-]
+
+import {
+  LogOut,
+  User,
+  ChevronDown
+} from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 export default function NavigationMenuDemo() {
-  return (
-    <NavigationMenu>
-      <NavigationMenuList className="p-4 flex gap-2">
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className="bg-transparent hover:bg-transparent">Getting started</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-              <li className="row-span-3">
-                <NavigationMenuLink asChild>
-                  <a
-                    className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                    href="/"
-                  >
-                    <Icons.logo className="h-6 w-6" />
-                    <div className="mb-2 mt-4 text-lg font-medium">
-                      shadcn/ui
-                    </div>
-                    <p className="text-sm leading-tight text-muted-foreground">
-                      Beautifully designed components built with Radix UI and
-                      Tailwind CSS.
-                    </p>
-                  </a>
+
+  const { data, loading } = useMeQuery();
+
+  const modifyNavbar = ( data:MeQuery | undefined, loading:boolean ) => {
+    if(loading) {
+      return null
+    } else if (!data?.me) {
+      return (
+          <div className="flex gap-2">
+            <NavigationMenuItem>
+              <Link href="/register" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Register
                 </NavigationMenuLink>
-              </li>
-              <ListItem href="/docs" title="Introduction">
-                Re-usable components built using Radix UI and Tailwind CSS.
-              </ListItem>
-              <ListItem href="/docs/installation" title="Installation">
-                How to install dependencies and structure your app.
-              </ListItem>
-              <ListItem href="/docs/primitives/typography" title="Typography">
-                Styles for headings, paragraphs, lists...etc
-              </ListItem>
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <NavigationMenuTrigger className="bg-transparent hover:bg-transparent">Components</NavigationMenuTrigger>
-          <NavigationMenuContent>
-            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {components.map((component) => (
-                <ListItem
-                  key={component.title}
-                  title={component.title}
-                  href={component.href}
-                >
-                  {component.description}
-                </ListItem>
-              ))}
-            </ul>
-          </NavigationMenuContent>
-        </NavigationMenuItem>
-        {/* <NavigationMenuItem className="bg-transparent hover:bg-transparent">
-          <Link href="/docs" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Documentation
-            </NavigationMenuLink>
-          </Link>
-        </NavigationMenuItem> */}
-      </NavigationMenuList>
+              </Link>
+            </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link href="/login" legacyBehavior passHref>
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  Login
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </div>
+      )
+    } else {
+      return (
+        <div className="flex gap-2">
+            <NavigationMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger >
+                  <Button variant="ghost">
+                    {data.me.username}
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-fit" align="end" forceMount>
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem className="hover:cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  {/* <DropdownMenuItem>
+                    <Github className="mr-2 h-4 w-4" />
+                    <span>GitHub</span>
+                  </DropdownMenuItem> */}
+                  {/* <DropdownMenuSeparator /> */}
+                  <DropdownMenuItem className="hover:cursor-pointer">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </NavigationMenuItem>
+          </div>
+      )
+    }
+  }
+
+  return (
+    <NavigationMenu className="max-w-none justify-start w-full mx-auto bg-slate-900 rounded-md">
+      <div className="w-full">
+
+      <NavigationMenuList className="p-4 justify-between">
+          <div className="flex p-2">
+            <NavigationMenuItem>
+              <Link href="/" legacyBehavior passHref>
+                <NavigationMenuLink>
+                  Reddited
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
+          </div>
+          { modifyNavbar(data, loading) }
+        </NavigationMenuList>
+      </div>
     </NavigationMenu>
   )
 }

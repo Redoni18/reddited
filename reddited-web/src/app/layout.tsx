@@ -18,7 +18,7 @@ export default function RootLayout({
 }) {
   return (
     <html className='dark container mx-auto h-full box-border' lang="en">
-      <body className={`${inter.className} p-8`}>
+      <body className={`${inter.className} p-8 h-full`}>
         <ApolloWrapper>{children}</ApolloWrapper>
       </body>
     </html>
