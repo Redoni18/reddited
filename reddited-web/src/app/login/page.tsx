@@ -25,7 +25,7 @@ import {
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
 import { useRouter } from 'next/navigation'
-import { useLoginMutation } from "@/gql/grapqhql";
+import { MeDocument, useLoginMutation } from "@/gql/grapqhql";
 import Link from "next/link";
 import constructSetError from "@/lib/toErrorMap";
 import { useToast } from "@/components/ui/use-toast"
@@ -54,21 +54,35 @@ const defaultValues: Partial<RegisterProps> = {
 const Login: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
     const [allErrors, setAllErrors] = useState<Record<string, string>>()
-    const [registerFunction, { loading }] = useLoginMutation(); //generated custom hook from graphql code generator
+    const [loginFunction, { loading }] = useLoginMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
     })
+    const meQuery = MeDocument
 
     const { toast } = useToast()
 
     const onSubmit = async (registerData: RegisterProps) => {
         try {
-            const response = await registerFunction({
+            const response = await loginFunction({
                 variables: {
                     email: registerData.email,
                     password: registerData.password
-                }
+                },
+                update: (cache, { data }) => {
+                    // Check if the login was successful and contains user data
+                    const userData = data?.login?.user;
+          
+                    if (userData) {
+                      cache.writeQuery({
+                        query: meQuery,
+                        data: {
+                          user: userData
+                        },
+                      });
+                    }
+                },
             })
 
             if(response.data?.login.user) {

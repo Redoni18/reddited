@@ -38,7 +38,7 @@ export default function NavigationMenuDemo() {
   const modifyNavbar = ( data:MeQuery | undefined, loading:boolean ) => {
     if(loading) {
       return null
-    } else if (!data?.me) {
+    } else if (!data?.user) {
       return (
           <div className="flex gap-2">
             <NavigationMenuItem>
@@ -64,7 +64,7 @@ export default function NavigationMenuDemo() {
               <DropdownMenu>
                 <DropdownMenuTrigger >
                   <Button variant="ghost">
-                    {data.me.username}
+                    {data.user.username}
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>

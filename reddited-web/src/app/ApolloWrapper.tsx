@@ -32,7 +32,7 @@ function makeClient() {
   if(typeof window !== 'undefined') {
     persistCache({
       cache,
-      storage: new SessionStorageWrapper(window.localStorage)
+      storage: new SessionStorageWrapper(window.sessionStorage)
     });
   }
 

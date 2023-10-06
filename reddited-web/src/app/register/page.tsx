@@ -23,7 +23,7 @@ import {
 } from "../../components/ui/form"
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
-import { useRegisterMutation } from "@/gql/grapqhql";
+import { MeDocument, useRegisterMutation } from "@/gql/grapqhql";
 import { useRouter } from 'next/navigation'
 import { Icons } from "@/components/ui/icons";
 import Link from "next/link";
@@ -68,6 +68,8 @@ const Register: React.FC<RegisterProps> = ({}) => {
         defaultValues
     })
 
+    const meQuery = MeDocument
+
     const onSubmit = async (registerData: RegisterProps) => {
         try {
             const response = await registerFunction({
@@ -75,7 +77,20 @@ const Register: React.FC<RegisterProps> = ({}) => {
                     username: registerData.username,
                     email: registerData.email,
                     password: registerData.password
-                }
+                },
+                update: (cache, { data }) => {
+                    // Check if the login was successful and contains user data
+                    const userData = data?.register?.user;
+          
+                    if (userData) {
+                      cache.writeQuery({
+                        query: meQuery,
+                        data: {
+                          user: userData
+                        },
+                      });
+                    }
+                },
             })
 
             if(response.data?.register.user) {
