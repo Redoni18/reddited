@@ -33,7 +33,7 @@ const main = async () => {
         port: 5432,
     });
     app.use((0, express_session_1.default)({
-        name: "qid",
+        name: constants_1.__cookieName__,
         store: new pgSession({
             pool: pgPool,
             disableTouch: true,

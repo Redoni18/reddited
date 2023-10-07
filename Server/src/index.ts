@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 import { MikroORM } from "@mikro-orm/core";
-import { __dbHost__, __dbName__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
+import { __cookieName__, __dbHost__, __dbName__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
 import microConfig from "./mikro-orm.config"
 import express from "express"
 import { ApolloServer } from "@apollo/server"
@@ -36,7 +36,7 @@ const main = async () => {
     });
 
     app.use(session({
-        name: "qid",
+        name: __cookieName__,
         store: new pgSession({
             pool : pgPool,
             disableTouch: true,

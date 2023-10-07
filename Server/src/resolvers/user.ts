@@ -3,7 +3,7 @@ import { User } from "../entities/User"
 import { MyContext } from "src/types"
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql"
 import bcrypt from 'bcrypt';
-import { __saltRounds__ } from "../constants";
+import { __cookieName__, __saltRounds__ } from "../constants";
 
 @InputType()
 class UserPasswordInput {
@@ -155,6 +155,23 @@ export class UserResolver {
         req.session!.userId = user.id
 
         return { user }
+    }
+
+    @Mutation(() => Boolean)
+    logout (
+        @Ctx() { req, res }: MyContext
+    ) {
+        return new Promise((resolve) => {
+            req.session!.destroy((err) => {
+                if(err) {
+                    resolve(false)
+                    return
+                }
+                
+                res.clearCookie(__cookieName__)
+                resolve(true)
+            })
+        })
     }
 }
 

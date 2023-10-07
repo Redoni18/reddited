@@ -11,7 +11,8 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "./ui/navigation-menu"
-import { MeQuery, useMeQuery } from "@/gql/grapqhql"
+import { MeDocument, MeQuery, useLogoutMutation, useMeQuery } from "@/gql/grapqhql"
+import { useRouter } from 'next/navigation'
 
 
 import {
@@ -29,11 +30,42 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import Router from "next/router"
+
 
 
 export default function NavigationMenuDemo() {
+  const router = useRouter()
 
   const { data, loading } = useMeQuery();
+
+  const [logoutFunction] = useLogoutMutation()
+  const meQuery = MeDocument
+
+  const handleLogout = async () => {
+    try {
+      const response = await logoutFunction({
+        update: (cache, { data }) => {
+            const logoutStatus = data?.logout
+  
+            if (logoutStatus === true) {
+              cache.writeQuery({
+                query: meQuery,
+                data: {
+                  user: null
+                },
+              });
+            }
+        },
+      })
+
+      if(response.data?.logout === true) {
+        router.push('/login', {scroll: false})
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
   const modifyNavbar = ( data:MeQuery | undefined, loading:boolean ) => {
     if(loading) {
@@ -81,7 +113,7 @@ export default function NavigationMenuDemo() {
                     <span>GitHub</span>
                   </DropdownMenuItem> */}
                   {/* <DropdownMenuSeparator /> */}
-                  <DropdownMenuItem className="hover:cursor-pointer">
+                  <DropdownMenuItem onClick={handleLogout} className="hover:cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
                     <span>Log out</span>
                   </DropdownMenuItem>
