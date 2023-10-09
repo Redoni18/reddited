@@ -23,7 +23,7 @@ import {
 } from "../../components/ui/form"
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
-import { MeDocument, useRegisterMutation } from "@/gql/grapqhql";
+import { useRegisterMutation } from "@/gql/grapqhql";
 import { useRouter } from 'next/navigation'
 import { Icons } from "@/components/ui/icons";
 import Link from "next/link";
@@ -62,35 +62,20 @@ const defaultValues: Partial<RegisterProps> = {
 
 const Register: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
-    const [registerFunction, { loading }] = useRegisterMutation(); //generated custom hook from graphql code generator
+    const [, registerFunction] = useRegisterMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
     })
 
-    const meQuery = MeDocument
+    // const meQuery = MeDocument
 
     const onSubmit = async (registerData: RegisterProps) => {
         try {
             const response = await registerFunction({
-                variables: {
-                    username: registerData.username,
-                    email: registerData.email,
-                    password: registerData.password
-                },
-                update: (cache, { data }) => {
-                    // Check if the login was successful and contains user data
-                    const userData = data?.register?.user;
-          
-                    if (userData) {
-                      cache.writeQuery({
-                        query: meQuery,
-                        data: {
-                          user: userData
-                        },
-                      });
-                    }
-                },
+                username: registerData.username,
+                email: registerData.email,
+                password: registerData.password
             })
 
             if(response.data?.register.user) {
@@ -179,15 +164,15 @@ const Register: React.FC<RegisterProps> = ({}) => {
                                 )}
                             />
 
-                            {!loading
+                            {/* {!loading
                                 ?
-                                <Button className="w-full">Create account</Button>
                                 :
                                 <Button className="w-full" disabled>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Please wait
                                 </Button>
-                            }
+                            } */}
+                            <Button className="w-full">Create account</Button>
                         </form>
                     </Form>
                 </CardContent>

@@ -54,7 +54,7 @@ const defaultValues: Partial<RegisterProps> = {
 const Login: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
     const [allErrors, setAllErrors] = useState<Record<string, string>>()
-    const [loginFunction, { loading }] = useLoginMutation(); //generated custom hook from graphql code generator
+    const [, loginFunction] = useLoginMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
@@ -66,23 +66,8 @@ const Login: React.FC<RegisterProps> = ({}) => {
     const onSubmit = async (registerData: RegisterProps) => {
         try {
             const response = await loginFunction({
-                variables: {
-                    email: registerData.email,
-                    password: registerData.password
-                },
-                update: (cache, { data }) => {
-                    // Check if the login was successful and contains user data
-                    const userData = data?.login?.user;
-          
-                    if (userData) {
-                      cache.writeQuery({
-                        query: meQuery,
-                        data: {
-                          user: userData
-                        },
-                      });
-                    }
-                },
+                email: registerData.email,
+                password: registerData.password
             })
 
             if(response.data?.login.user) {
@@ -171,15 +156,15 @@ const Login: React.FC<RegisterProps> = ({}) => {
                                 )}
                             />
 
-                            {!loading
+                            {/* {!loading
                                 ?
-                                <Button className="w-full">Sign In</Button>
                                 :
                                 <Button className="w-full" disabled>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Please wait
                                 </Button>
-                            }
+                            } */}
+                            <Button className="w-full">Sign In</Button>
                         </form>
                     </Form>
                 </CardContent>

@@ -37,26 +37,15 @@ import Router from "next/router"
 export default function NavigationMenuDemo() {
   const router = useRouter()
 
-  const { data, loading } = useMeQuery();
+  const [{fetching, data}] = useMeQuery();
 
-  const [logoutFunction] = useLogoutMutation()
+  const [, logoutFunction] = useLogoutMutation()
   const meQuery = MeDocument
 
   const handleLogout = async () => {
     try {
       const response = await logoutFunction({
-        update: (cache, { data }) => {
-            const logoutStatus = data?.logout
-  
-            if (logoutStatus === true) {
-              cache.writeQuery({
-                query: meQuery,
-                data: {
-                  user: null
-                },
-              });
-            }
-        },
+
       })
 
       if(response.data?.logout === true) {
@@ -67,8 +56,8 @@ export default function NavigationMenuDemo() {
     }
   }
 
-  const modifyNavbar = ( data:MeQuery | undefined, loading:boolean ) => {
-    if(loading) {
+  const modifyNavbar = ( data:MeQuery | undefined, fetching:boolean ) => {
+    if(fetching) {
       return null
     } else if (!data?.user) {
       return (
@@ -139,7 +128,7 @@ export default function NavigationMenuDemo() {
               </Link>
             </NavigationMenuItem>
           </div>
-          { modifyNavbar(data, loading) }
+          { modifyNavbar(data, fetching) }
         </NavigationMenuList>
       </div>
     </NavigationMenu>
