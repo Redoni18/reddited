@@ -62,7 +62,7 @@ const defaultValues: Partial<RegisterProps> = {
 
 const Register: React.FC<RegisterProps> = ({}) => {
     const router = useRouter()
-    const [, registerFunction] = useRegisterMutation(); //generated custom hook from graphql code generator
+    const [{ fetching }, registerFunction] = useRegisterMutation(); //generated custom hook from graphql code generator
     const form = useForm<RegisterProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
@@ -164,15 +164,15 @@ const Register: React.FC<RegisterProps> = ({}) => {
                                 )}
                             />
 
-                            {/* {!loading
+                            {!fetching
                                 ?
+                                <Button className="w-full">Create account</Button>
                                 :
                                 <Button className="w-full" disabled>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Please wait
                                 </Button>
-                            } */}
-                            <Button className="w-full">Create account</Button>
+                            }
                         </form>
                     </Form>
                 </CardContent>

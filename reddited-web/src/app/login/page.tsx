@@ -25,7 +25,7 @@ import {
 import Wrapper from "../../components/Wrapper"
 import { useForm } from "react-hook-form"
 import { useRouter } from 'next/navigation'
-import { MeDocument, useLoginMutation } from "@/gql/grapqhql";
+import { useLoginMutation } from "@/gql/grapqhql";
 import Link from "next/link";
 import constructSetError from "@/lib/toErrorMap";
 import { useToast } from "@/components/ui/use-toast"
@@ -43,27 +43,26 @@ const accountFormSchema = z.object({
         })
 })
 
-type RegisterProps = z.infer<typeof accountFormSchema>
+type LoginProps = z.infer<typeof accountFormSchema>
 
-const defaultValues: Partial<RegisterProps> = {
+const defaultValues: Partial<LoginProps> = {
     email: "",
     password: ""
 }
 
 
-const Login: React.FC<RegisterProps> = ({}) => {
+const Login: React.FC<LoginProps> = ({}) => {
     const router = useRouter()
     const [allErrors, setAllErrors] = useState<Record<string, string>>()
     const [, loginFunction] = useLoginMutation(); //generated custom hook from graphql code generator
-    const form = useForm<RegisterProps>({
+    const form = useForm<LoginProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
     })
-    const meQuery = MeDocument
 
     const { toast } = useToast()
 
-    const onSubmit = async (registerData: RegisterProps) => {
+    const onSubmit = async (registerData: LoginProps) => {
         try {
             const response = await loginFunction({
                 email: registerData.email,
