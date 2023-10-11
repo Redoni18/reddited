@@ -1,21 +1,42 @@
-"use client"
 import Navbar from '@/components/Navbar'
-import { usePostsQuery } from '@/gql/grapqhql'
+import Head from 'next/head';
+import { PostsDocument, PostsQuery, } from '@/gql/grapqhql'
+import React from 'react';
+import { cacheExchange, createClient, fetchExchange, ssrExchange } from '@urql/core';
+import { registerUrql } from '@urql/next/rsc';
 
-export default function Home() {
-  const [{ data }] = usePostsQuery()
+const isServerSide = typeof window === 'undefined';
+
+const ssr = ssrExchange({
+  isClient: !isServerSide,
+  initialState: {}
+});
+
+const makeClient = () => {
+  return createClient({
+    url: 'https://trygql.formidable.dev/graphql/basic-pokedex',
+    exchanges: [cacheExchange, fetchExchange, ssr],
+  });
+};
+
+const { getClient } = registerUrql(makeClient);
+
+export default async function Home() {
+  const result = await getClient().query(PostsDocument, {});
+  console.log(result)
   return (
-    <div className='w-full box-border dark my-4'>
+    <main>
+      <div className='w-full box-border dark my-4'>
       <Navbar />
       <main className='my-20'>
-        <h1 className='text-3xl font-medium'>
-          {!data ? <div>loading...</div> : data?.posts.map((post) => 
-            <li key={post.id}>
-              {post.title}
-            </li>
-          )}
-        </h1>
+        home
       </main>
     </div>
-  )
+      <ul>
+        {result.data.pokemons.map((x: any) => (
+          <li key={x.id}>{x.name}</li>
+        ))}
+      </ul>
+    </main>
+  );
 }
