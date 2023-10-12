@@ -3,7 +3,7 @@ import { fetchExchange } from "urql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
 import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from "@/gql/grapqhql";
 
-export const withUrqlClient = (_ssrExchange: any) => ({
+export const createUrqlClient = (_ssrExchange: any) => ({
     url: 'http://localhost:8000/graphql',
     exchanges: [cacheExchange({
     updates: {
@@ -42,8 +42,8 @@ export const withUrqlClient = (_ssrExchange: any) => ({
             },
         }
     }
-    }), fetchExchange],
+    }), _ssrExchange, fetchExchange],
     fetchOptions: {
-        credentials: "include"
+        credentials: "include" as const
     }
 });
