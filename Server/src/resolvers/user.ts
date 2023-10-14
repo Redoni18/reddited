@@ -43,6 +43,28 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+    @Mutation(() => UserResponse)
+    async forgotPassword(
+        @Arg('email') email: string,
+        @Ctx() { em }: MyContext
+    ): Promise<UserResponse> {
+        const user = await em.findOne(User, {
+            email: email
+        })
+
+        if(!user) {
+            return {
+                errors: [{
+                    field: "email",
+                    message: "email does not exist"
+                }]
+            }
+        }
+
+        console.log(user)
+        return { user }
+    }
+
     @Query(() => User, {nullable: true})
     async user(
        @Ctx() { req, em }: MyContext 
