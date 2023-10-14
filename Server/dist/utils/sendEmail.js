@@ -13,12 +13,12 @@ const transporter = nodemailer_1.default.createTransport({
         pass: constants_1.GOOGLE_APP_PASSWORD,
     },
 });
-async function sendEmail(to, text) {
+async function sendEmail(to, html) {
     const info = await transporter.sendMail({
         from: "Reddited - Reddit Clone",
         to: to,
         subject: "Password Reset",
-        text: text,
+        html
     });
     console.log("Message sent: %s", info.messageId);
 }

@@ -20,6 +20,7 @@ const User_1 = require("../entities/User");
 const type_graphql_1 = require("type-graphql");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const constants_1 = require("../constants");
+const sendEmail_1 = require("src/utils/sendEmail");
 let UserPasswordInput = class UserPasswordInput {
 };
 __decorate([
@@ -82,15 +83,10 @@ let UserResolver = class UserResolver {
             email: email
         });
         if (!user) {
-            return {
-                errors: [{
-                        field: "email",
-                        message: "email does not exist"
-                    }]
-            };
+            return false;
         }
-        console.log(user);
-        return { user };
+        (0, sendEmail_1.sendEmail)(email, '<p>In order to reset password <a href="localhost:3000/change-password/:token>Click here</a></p>');
+        return true;
     }
     async user({ req, em }) {
         if (!req.session.userId) {
@@ -193,7 +189,7 @@ let UserResolver = class UserResolver {
 };
 exports.UserResolver = UserResolver;
 __decorate([
-    (0, type_graphql_1.Mutation)(() => UserResponse),
+    (0, type_graphql_1.Mutation)(() => Boolean),
     __param(0, (0, type_graphql_1.Arg)('email')),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),

@@ -4,6 +4,7 @@ import { MyContext } from "src/types"
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql"
 import bcrypt from 'bcrypt';
 import { __cookieName__, __saltRounds__ } from "../constants";
+import { sendEmail } from "src/utils/sendEmail";
 
 @InputType()
 class UserPasswordInput {
@@ -43,26 +44,21 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
-    @Mutation(() => UserResponse)
+    @Mutation(() => Boolean)
     async forgotPassword(
         @Arg('email') email: string,
         @Ctx() { em }: MyContext
-    ): Promise<UserResponse> {
+    ) {
         const user = await em.findOne(User, {
             email: email
         })
 
         if(!user) {
-            return {
-                errors: [{
-                    field: "email",
-                    message: "email does not exist"
-                }]
-            }
+            return false
         }
 
-        console.log(user)
-        return { user }
+        sendEmail(email, '<p>In order to reset password <a href="localhost:3000/change-password/:token>Click here</a></p>')
+        return true
     }
 
     @Query(() => User, {nullable: true})
