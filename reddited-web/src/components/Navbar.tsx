@@ -30,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import Router from "next/router"
+import { isServer } from "@/lib/isServer"
 
 
 
@@ -40,7 +40,6 @@ export default function NavigationMenuDemo() {
   const [{fetching, data}] = useMeQuery();
 
   const [, logoutFunction] = useLogoutMutation()
-  const meQuery = MeDocument
 
   const handleLogout = async () => {
     try {

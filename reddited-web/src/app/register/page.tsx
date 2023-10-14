@@ -27,6 +27,8 @@ import { useRegisterMutation } from "@/gql/grapqhql";
 import { useRouter } from 'next/navigation'
 import { Icons } from "@/components/ui/icons";
 import Link from "next/link";
+import { withUrqlClient } from "next-urql";
+import { createUrqlClient } from "@/lib/createUrqlClient";
 
 
 const accountFormSchema = z.object({
@@ -186,4 +188,4 @@ const Register: React.FC<RegisterProps> = ({}) => {
     )
 }
 
-export default Register;
+export default withUrqlClient(createUrqlClient)(Register);

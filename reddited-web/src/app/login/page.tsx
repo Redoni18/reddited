@@ -30,6 +30,8 @@ import Link from "next/link";
 import constructSetError from "@/lib/toErrorMap";
 import { useToast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster";
+import { withUrqlClient } from "next-urql";
+import { createUrqlClient } from "@/lib/createUrqlClient";
 
 
 const accountFormSchema = z.object({
@@ -178,4 +180,4 @@ const Login: React.FC<LoginProps> = ({}) => {
     )
 }
 
-export default Login;
+export default withUrqlClient(createUrqlClient) (Login);
