@@ -20,7 +20,7 @@ const User_1 = require("../entities/User");
 const type_graphql_1 = require("type-graphql");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const constants_1 = require("../constants");
-const sendEmail_1 = require("src/utils/sendEmail");
+const uuid_1 = require("uuid");
 let UserPasswordInput = class UserPasswordInput {
 };
 __decorate([
@@ -85,7 +85,8 @@ let UserResolver = class UserResolver {
         if (!user) {
             return false;
         }
-        (0, sendEmail_1.sendEmail)(email, '<p>In order to reset password <a href="localhost:3000/change-password/:token>Click here</a></p>');
+        const token = (0, uuid_1.v4)();
+        console.log(token);
         return true;
     }
     async user({ req, em }) {

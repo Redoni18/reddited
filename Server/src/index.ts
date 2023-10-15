@@ -11,9 +11,9 @@ import { json } from "body-parser";
 import { expressMiddleware } from "@apollo/server/express4";
 import { PostResolver } from "./resolvers/post";
 import { UserResolver } from './resolvers/user';
+import RedisStore from "connect-redis"
+import Redis from "ioredis"
 import session from "express-session"
-import connectPgSimple from "connect-pg-simple"
-import pg from "pg"
 import { MyContext } from './types';
 
 const main = async () => {
@@ -25,23 +25,22 @@ const main = async () => {
     const app = express();
     const cors = require('cors')
 
-    const pgSession = connectPgSimple(session);
 
-    const pgPool = new pg.Pool({
-        user: __dbUser__,
-        host: __dbHost__,
-        database: __dbName__,
-        password: __dbPassword__,
-        port: 5432,
-    });
+    let redisClient = Redis.createClient()
+    redisClient.connect().catch(console.error)
+
+    // Initialize store.
+    let redisStore = new RedisStore({
+        client: redisClient,
+        prefix: "myapp:",
+        disableTouch: true,
+        disableTTL: true
+    })
+
 
     app.use(session({
         name: __cookieName__,
-        store: new pgSession({
-            pool : pgPool,
-            disableTouch: true,
-            createTableIfMissing: true
-        }),
+        store: redisStore,
         secret: __secret__,
         resave: false,
         cookie: { 

@@ -5,6 +5,7 @@ import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } fro
 import bcrypt from 'bcrypt';
 import { __cookieName__, __saltRounds__ } from "../constants";
 import { sendEmail } from "src/utils/sendEmail";
+import { v4 } from "uuid"
 
 @InputType()
 class UserPasswordInput {
@@ -57,7 +58,11 @@ export class UserResolver {
             return false
         }
 
-        sendEmail(email, '<p>In order to reset password <a href="localhost:3000/change-password/:token>Click here</a></p>')
+        const token = v4()
+        console.log(token)
+
+
+        // sendEmail(email, '<p>In order to reset password <a href="localhost:3000/change-password/:token>Click here</a></p>')
         return true
     }
 

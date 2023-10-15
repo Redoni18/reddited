@@ -15,30 +15,26 @@ const body_parser_1 = require("body-parser");
 const express4_1 = require("@apollo/server/express4");
 const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
+const connect_redis_1 = __importDefault(require("connect-redis"));
+const ioredis_1 = __importDefault(require("ioredis"));
 const express_session_1 = __importDefault(require("express-session"));
-const connect_pg_simple_1 = __importDefault(require("connect-pg-simple"));
-const pg_1 = __importDefault(require("pg"));
 const main = async () => {
     const orm = await core_1.MikroORM.init(mikro_orm_config_1.default);
     await orm.getMigrator().up();
     orm.em.fork();
     const app = (0, express_1.default)();
     const cors = require('cors');
-    const pgSession = (0, connect_pg_simple_1.default)(express_session_1.default);
-    const pgPool = new pg_1.default.Pool({
-        user: constants_1.__dbUser__,
-        host: constants_1.__dbHost__,
-        database: constants_1.__dbName__,
-        password: constants_1.__dbPassword__,
-        port: 5432,
+    let redisClient = ioredis_1.default.createClient();
+    redisClient.connect().catch(console.error);
+    let redisStore = new connect_redis_1.default({
+        client: redisClient,
+        prefix: "myapp:",
+        disableTouch: true,
+        disableTTL: true
     });
     app.use((0, express_session_1.default)({
         name: constants_1.__cookieName__,
-        store: new pgSession({
-            pool: pgPool,
-            disableTouch: true,
-            createTableIfMissing: true
-        }),
+        store: redisStore,
         secret: constants_1.__secret__,
         resave: false,
         cookie: {
