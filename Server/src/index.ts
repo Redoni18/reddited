@@ -26,13 +26,13 @@ const main = async () => {
     const cors = require('cors')
 
 
-    let redisClient = Redis.createClient()
-    redisClient.connect().catch(console.error)
+    let redis = new Redis()
+    redis.connect().catch(console.error)
 
     // Initialize store.
     let redisStore = new RedisStore({
-        client: redisClient,
-        prefix: "myapp:",
+        client: redis,
+        prefix: "session:",
         disableTouch: true,
         disableTTL: true
     })
@@ -73,7 +73,7 @@ const main = async () => {
             credentials: true,
         }),
         expressMiddleware(apolloServer, {
-            context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res }),
+            context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res, redis }),
         }),
     );
 

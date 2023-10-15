@@ -4,7 +4,7 @@ import { MyContext } from "src/types"
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql"
 import bcrypt from 'bcrypt';
 import { __cookieName__, __saltRounds__ } from "../constants";
-import { sendEmail } from "src/utils/sendEmail";
+import { sendEmail } from "../utils/sendEmail";
 import { v4 } from "uuid"
 
 @InputType()
@@ -48,7 +48,7 @@ export class UserResolver {
     @Mutation(() => Boolean)
     async forgotPassword(
         @Arg('email') email: string,
-        @Ctx() { em }: MyContext
+        @Ctx() { em, redis }: MyContext
     ) {
         const user = await em.findOne(User, {
             email: email
@@ -61,8 +61,10 @@ export class UserResolver {
         const token = v4()
         console.log(token)
 
+        await redis.set(`Forgot_Password_Token: ${token}`, user.id)
+        await redis.expire(`Forgot_Password_Token:${token}`, 3600 * 24 * 1)
 
-        // sendEmail(email, '<p>In order to reset password <a href="localhost:3000/change-password/:token>Click here</a></p>')
+        await sendEmail(email, `<p>In order to reset password <a href="http://localhost:3000/change-password/${token}">click here</a></p>`)
         return true
     }
 

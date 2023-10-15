@@ -24,11 +24,11 @@ const main = async () => {
     orm.em.fork();
     const app = (0, express_1.default)();
     const cors = require('cors');
-    let redisClient = ioredis_1.default.createClient();
-    redisClient.connect().catch(console.error);
+    let redis = new ioredis_1.default();
+    redis.connect().catch(console.error);
     let redisStore = new connect_redis_1.default({
-        client: redisClient,
-        prefix: "myapp:",
+        client: redis,
+        prefix: "session:",
         disableTouch: true,
         disableTTL: true
     });
@@ -57,7 +57,7 @@ const main = async () => {
         origin: ['http://localhost:3000'],
         credentials: true,
     }), (0, express4_1.expressMiddleware)(apolloServer, {
-        context: async ({ req, res }) => ({ em: orm.em, req, res }),
+        context: async ({ req, res }) => ({ em: orm.em, req, res, redis }),
     }));
     app.listen(8000, () => {
         console.log('server started on port 8000');
