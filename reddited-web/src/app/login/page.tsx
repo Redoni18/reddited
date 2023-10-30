@@ -56,7 +56,7 @@ const defaultValues: Partial<LoginProps> = {
 const Login: React.FC<LoginProps> = ({}) => {
     const router = useRouter()
     const [allErrors, setAllErrors] = useState<Record<string, string>>()
-    const [, loginFunction] = useLoginMutation(); //generated custom hook from graphql code generator
+    const [{fetching}, loginFunction] = useLoginMutation(); //generated custom hook from graphql code generator
     const form = useForm<LoginProps>({
         resolver: zodResolver(accountFormSchema),
         defaultValues
@@ -157,15 +157,15 @@ const Login: React.FC<LoginProps> = ({}) => {
                                 )}
                             />
 
-                            {/* {!loading
+                            {!fetching
                                 ?
+                                <Button className="w-full">Sign In</Button>
                                 :
                                 <Button className="w-full" disabled>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Please wait
                                 </Button>
-                            } */}
-                            <Button className="w-full">Sign In</Button>
+                            }
                         </form>
                     </Form>
                 </CardContent>

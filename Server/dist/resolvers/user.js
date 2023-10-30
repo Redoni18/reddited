@@ -79,12 +79,45 @@ UserResponse = __decorate([
     (0, type_graphql_1.ObjectType)()
 ], UserResponse);
 let UserResolver = class UserResolver {
+    async changePassword(token, newPassword, { em, redis, req }) {
+        if (newPassword.length <= 8) {
+            return {
+                errors: [{
+                        field: "username",
+                        message: "password length must be greater than 8"
+                    }]
+            };
+        }
+        const userId = await redis.get('Forgot_Password_Token: ' + token);
+        if (!userId) {
+            return {
+                errors: [{
+                        field: "token",
+                        message: "token is invalid"
+                    }]
+            };
+        }
+        const user = await em.findOne(User_1.User, { id: parseInt(userId) });
+        if (!user) {
+            return {
+                errors: [{
+                        field: "token",
+                        message: "user no longer exists"
+                    }]
+            };
+        }
+        const hashedPassword = await bcrypt_1.default.hash(newPassword, constants_1.__saltRounds__);
+        user.password = hashedPassword;
+        await em.persistAndFlush(user);
+        req.session.userId = user.id;
+        return { user };
+    }
     async forgotPassword(email, { em, redis }) {
         const user = await em.findOne(User_1.User, {
             email: email
         });
         if (!user) {
-            return false;
+            return true;
         }
         const token = (0, uuid_1.v4)();
         console.log(token);
@@ -102,58 +135,66 @@ let UserResolver = class UserResolver {
     }
     async register(options, { em, req }) {
         var _a;
-        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-        if (options.username.length <= 2) {
-            return {
-                errors: [{
-                        field: "username",
-                        message: "username length must be greater than 2"
-                    }]
-            };
-        }
-        if (options.email.length <= 4) {
-            return {
-                errors: [{
-                        field: "email",
-                        message: "email length must be greater than 4 characters"
-                    }]
-            };
-        }
-        else {
-            if (!emailRegex.test(options.email)) {
+        try {
+            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            if (options.username.length <= 2) {
                 return {
                     errors: [{
-                            field: "email",
-                            message: "please type a valid email"
+                            field: "username",
+                            message: "Username length must be greater than 2"
                         }]
                 };
             }
-        }
-        if (options.password.length <= 8) {
-            return {
-                errors: [{
-                        field: "username",
-                        message: "password length must be greater than 8"
-                    }]
-            };
-        }
-        const hashedPassword = await bcrypt_1.default.hash(options.password, constants_1.__saltRounds__);
-        const user = em.create(User_1.User, { username: options.username, email: options.email, password: hashedPassword });
-        await em.persistAndFlush(user);
-        try {
+            if (options.email.length <= 4) {
+                return {
+                    errors: [{
+                            field: "email",
+                            message: "Email length must be greater than 4 characters"
+                        }]
+                };
+            }
+            else if (!emailRegex.test(options.email)) {
+                return {
+                    errors: [{
+                            field: "email",
+                            message: "Please type a valid email"
+                        }]
+                };
+            }
+            if (options.password.length <= 8) {
+                return {
+                    errors: [{
+                            field: "password",
+                            message: "Password length must be greater than 8"
+                        }]
+                };
+            }
+            const hashedPassword = await bcrypt_1.default.hash(options.password, constants_1.__saltRounds__);
+            const user = em.create(User_1.User, {
+                username: options.username,
+                email: options.email,
+                password: hashedPassword
+            });
+            await em.persistAndFlush(user);
+            req.session.userId = user.id;
+            return { user };
         }
         catch (err) {
             if (err.code === "23505" || ((_a = err.detail) === null || _a === void 0 ? void 0 : _a.includes("already exists"))) {
                 return {
                     errors: [{
-                            field: "Username",
+                            field: "username",
                             message: `Username ${options.username} already exists`
                         }]
                 };
             }
+            return {
+                errors: [{
+                        field: "unknown",
+                        message: "An error occurred during registration"
+                    }]
+            };
         }
-        req.session.userId = user.id;
-        return { user };
     }
     async login(options, { em, req }) {
         const user = await em.findOne(User_1.User, {
@@ -193,6 +234,15 @@ let UserResolver = class UserResolver {
     }
 };
 exports.UserResolver = UserResolver;
+__decorate([
+    (0, type_graphql_1.Mutation)(() => UserResponse),
+    __param(0, (0, type_graphql_1.Arg)('token')),
+    __param(1, (0, type_graphql_1.Arg)('newPassword')),
+    __param(2, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolver.prototype, "changePassword", null);
 __decorate([
     (0, type_graphql_1.Mutation)(() => Boolean),
     __param(0, (0, type_graphql_1.Arg)('email')),

@@ -45,6 +45,54 @@ class UserResponse {
 
 @Resolver()
 export class UserResolver {
+    @Mutation(() => UserResponse)
+    async changePassword(
+        @Arg('token') token: string,
+        @Arg('newPassword') newPassword: string,
+        @Ctx() {em, redis, req}: MyContext
+    ):Promise<UserResponse> {
+        if(newPassword.length <= 8) {
+            return {
+                errors: [{
+                    field: "username",
+                    message: "password length must be greater than 8"
+                }]
+            }
+        }
+
+        const userId = await redis.get('Forgot_Password_Token: '+token)
+        if(!userId) {
+            return {
+                errors: [{
+                    field: "token",
+                    message: "token is invalid"
+                }]
+            }
+        }
+        
+        const user = await em.findOne(User, {id: parseInt(userId)})
+
+        if(!user) {
+            return {
+                errors: [{
+                    field: "token",
+                    message: "user no longer exists"
+                }]
+            }
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, __saltRounds__)
+        
+        user.password = hashedPassword
+        
+        await em.persistAndFlush(user)
+
+        req.session!.userId = user.id
+
+        return { user }
+    }
+
+
     @Mutation(() => Boolean)
     async forgotPassword(
         @Arg('email') email: string,
@@ -55,7 +103,7 @@ export class UserResolver {
         })
 
         if(!user) {
-            return false
+            return true
         }
 
         const token = v4()
@@ -85,67 +133,76 @@ export class UserResolver {
         @Arg('options', () => UserPasswordInput) options: UserPasswordInput,
         @Ctx() { em, req }: MyContext
     ): Promise<UserResponse> {
-
-        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-
-        if(options.username.length <= 2) {
-            return {
-                errors: [{
-                    field: "username",
-                    message: "username length must be greater than 2"
-                }]
+        try {
+            const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+    
+            if (options.username.length <= 2) {
+                return {
+                    errors: [{
+                        field: "username",
+                        message: "Username length must be greater than 2"
+                    }]
+                };
             }
-        }
-
-        if(options.email.length <= 4) {
-            return {
-                errors: [{
-                    field: "email",
-                    message: "email length must be greater than 4 characters"
-                }]
-            }
-        } else {
-            if(!emailRegex.test(options.email)) {
+    
+            if (options.email.length <= 4) {
                 return {
                     errors: [{
                         field: "email",
-                        message: "please type a valid email"
+                        message: "Email length must be greater than 4 characters"
                     }]
-                }
-            }
-        }
-
-
-        if(options.password.length <= 8) {
-            return {
-                errors: [{
-                    field: "username",
-                    message: "password length must be greater than 8"
-                }]
-            }
-        }
-
-        const hashedPassword = await bcrypt.hash(options.password, __saltRounds__)
-        
-        const user =  em.create(User, { username: options.username, email: options.email, password: hashedPassword } as RequiredEntityData<User>)
-        
-        await em.persistAndFlush(user)
-        try {
-        } catch (err) {
-            if(err.code === "23505" || err.detail?.includes("already exists")) {
+                };
+            } else if (!emailRegex.test(options.email)) {
                 return {
                     errors: [{
-                        field: "Username",
+                        field: "email",
+                        message: "Please type a valid email"
+                    }]
+                };
+            }
+    
+            if (options.password.length <= 8) {
+                return {
+                    errors: [{
+                        field: "password",
+                        message: "Password length must be greater than 8"
+                    }]
+                };
+            }
+    
+            const hashedPassword = await bcrypt.hash(options.password, __saltRounds__);
+    
+            const user = em.create(User, {
+                username: options.username,
+                email: options.email,
+                password: hashedPassword
+            } as RequiredEntityData<User>);
+    
+            await em.persistAndFlush(user);
+    
+            req.session!.userId = user.id;
+    
+            return { user };
+        } catch (err) {
+            if (err.code === "23505" || err.detail?.includes("already exists")) {
+                return {
+                    errors: [{
+                        field: "username",
                         message: `Username ${options.username} already exists`
                     }]
-                }
+                };
             }
+    
+            // Add a generic error message for other unexpected errors
+            return {
+                errors: [{
+                    field: "unknown",
+                    message: "An error occurred during registration"
+                }]
+            };
         }
-
-        req.session!.userId = user.id
-
-        return { user } 
     }
+    
 
     @Mutation(() => UserResponse)
     async login(
