@@ -59,8 +59,8 @@ export class UserResolver {
                 }]
             }
         }
-
-        const userId = await redis.get('Forgot_Password_Token: '+token)
+        const key = 'Forgot_Password_Token: '+token
+        const userId = await redis.get(key)
         if(!userId) {
             return {
                 errors: [{
@@ -86,6 +86,8 @@ export class UserResolver {
         user.password = hashedPassword
         
         await em.persistAndFlush(user)
+
+        await redis.del(key)
 
         req.session!.userId = user.id
 

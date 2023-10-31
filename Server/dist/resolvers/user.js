@@ -88,7 +88,8 @@ let UserResolver = class UserResolver {
                     }]
             };
         }
-        const userId = await redis.get('Forgot_Password_Token: ' + token);
+        const key = 'Forgot_Password_Token: ' + token;
+        const userId = await redis.get(key);
         if (!userId) {
             return {
                 errors: [{
@@ -109,6 +110,7 @@ let UserResolver = class UserResolver {
         const hashedPassword = await bcrypt_1.default.hash(newPassword, constants_1.__saltRounds__);
         user.password = hashedPassword;
         await em.persistAndFlush(user);
+        await redis.del(key);
         req.session.userId = user.id;
         return { user };
     }

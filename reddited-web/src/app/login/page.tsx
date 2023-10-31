@@ -170,9 +170,14 @@ const Login: React.FC<LoginProps> = ({}) => {
                     </Form>
                 </CardContent>
                 <CardFooter>
-                    <CardDescription className="mx-auto">
-                        Don&apos;t have an account? <Link href="/register" className="text-sky-300">Register here!</Link>
-                    </CardDescription>
+                    <div className="flex justify-between items-center w-full">
+                        <CardDescription>
+                            <Link href="/register" className="text-sky-300">Register here!</Link>
+                        </CardDescription>
+                        <CardDescription>
+                           <Link href="/forgot-password" className="text-sky-300">Forgot Password?</Link>
+                        </CardDescription>
+                    </div>
                 </CardFooter>
             </Card>
             <Toaster />
