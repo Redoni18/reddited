@@ -49,6 +49,7 @@ const defaultValues: Partial<ChangePasswordProps> = {
 function ChangePassword ({ params }: { params: { token: string } }) {
     const router = useRouter()
     const [allErrors, setAllErrors] = useState<Record<string, string>>()
+    const [tokenError, setTokenError] = useState<String>("")
     const [{fetching}, changePasswordFunction] = useChangePasswordMutation(); //generated custom hook from graphql code generator
     const form = useForm<ChangePasswordProps>({
         resolver: zodResolver(accountFormSchema),
@@ -68,6 +69,11 @@ function ChangePassword ({ params }: { params: { token: string } }) {
                 router.push('/', {scroll: false})
             } else {
                 const errors = response.data?.changePassword?.errors || [];
+                errors.forEach((error) => {
+                    if('token' in error) {
+                        setTokenError(error.token as string);
+                    }
+                })
                 setAllErrors(constructSetError(errors))
             }
           // Handle the response data as needed

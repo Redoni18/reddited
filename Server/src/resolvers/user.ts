@@ -54,7 +54,7 @@ export class UserResolver {
         if(newPassword.length <= 8) {
             return {
                 errors: [{
-                    field: "username",
+                    field: "password",
                     message: "password length must be greater than 8"
                 }]
             }
