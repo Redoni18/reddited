@@ -1,7 +1,5 @@
 import 'reflect-metadata'
-import { MikroORM } from "@mikro-orm/core";
 import { __cookieName__, __dbHost__, __dbName__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
-import microConfig from "./mikro-orm.config"
 import express from "express"
 import { ApolloServer } from "@apollo/server"
 import { buildSchema } from "type-graphql"
@@ -15,12 +13,27 @@ import RedisStore from "connect-redis"
 import Redis from "ioredis"
 import session from "express-session"
 import { MyContext } from './types';
+import { DataSource } from "typeorm";
+import { Post } from "./entities/Post";
+import { User } from "./entities/User";
 
 const main = async () => {
-    const orm = await MikroORM.init(microConfig);
-    await orm.getMigrator().up()
 
-    orm.em.fork();
+    const typeormConnection = new DataSource({
+        type: "postgres",
+        host: __dbHost__,
+        port: 5432,
+        username: __dbUser__,
+        password: __dbPassword__,
+        database: "reddited-db2",
+        synchronize: true,
+        logging: true,
+        entities: [Post, User],
+    })
+
+    typeormConnection.initialize().then(() => {
+        //initialized
+    }).catch(err => console.log(err))
 
     const app = express();
     const cors = require('cors')
@@ -73,7 +86,7 @@ const main = async () => {
             credentials: true,
         }),
         expressMiddleware(apolloServer, {
-            context: async ({ req, res }): Promise<MyContext> => ({ em: orm.em, req, res, redis }),
+            context: async ({ req, res }): Promise<MyContext> => ({ req, res, redis }),
         }),
     );
 

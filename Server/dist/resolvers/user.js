@@ -79,7 +79,7 @@ UserResponse = __decorate([
     (0, type_graphql_1.ObjectType)()
 ], UserResponse);
 let UserResolver = class UserResolver {
-    async changePassword(token, newPassword, { em, redis, req }) {
+    async changePassword(token, newPassword, { redis, req }) {
         if (newPassword.length <= 8) {
             return {
                 errors: [{
@@ -98,7 +98,8 @@ let UserResolver = class UserResolver {
                     }]
             };
         }
-        const user = await em.findOne(User_1.User, { id: parseInt(userId) });
+        const userIdNum = parseInt(userId);
+        const user = await User_1.User.findOne({ where: { id: userIdNum } });
         if (!user) {
             return {
                 errors: [{
@@ -108,16 +109,15 @@ let UserResolver = class UserResolver {
             };
         }
         const hashedPassword = await bcrypt_1.default.hash(newPassword, constants_1.__saltRounds__);
-        user.password = hashedPassword;
-        await em.persistAndFlush(user);
+        await User_1.User.update({ id: userIdNum }, { password: hashedPassword });
         await redis.del(key);
         req.session.userId = user.id;
         return { user };
     }
-    async forgotPassword(email, { em, redis }) {
-        const user = await em.findOne(User_1.User, {
-            email: email
-        });
+    async forgotPassword(email, { redis }) {
+        const user = await User_1.User.findOne({ where: {
+                email: email
+            } });
         if (!user) {
             return true;
         }
@@ -128,14 +128,14 @@ let UserResolver = class UserResolver {
         await (0, sendEmail_1.sendEmail)(email, `<p>In order to reset password <a href="http://localhost:3000/change-password/${token}">click here</a></p>`);
         return true;
     }
-    async user({ req, em }) {
+    async user({ req }) {
         if (!req.session.userId) {
             return null;
         }
-        const user = await em.findOne(User_1.User, { id: req.session.userId });
+        const user = await User_1.User.findOne({ where: { id: req.session.userId } });
         return user;
     }
-    async register(options, { em, req }) {
+    async register(options, { req }) {
         var _a;
         try {
             const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -172,12 +172,11 @@ let UserResolver = class UserResolver {
                 };
             }
             const hashedPassword = await bcrypt_1.default.hash(options.password, constants_1.__saltRounds__);
-            const user = em.create(User_1.User, {
+            const user = await User_1.User.create({
                 username: options.username,
                 email: options.email,
                 password: hashedPassword
-            });
-            await em.persistAndFlush(user);
+            }).save();
             req.session.userId = user.id;
             return { user };
         }
@@ -198,10 +197,10 @@ let UserResolver = class UserResolver {
             };
         }
     }
-    async login(options, { em, req }) {
-        const user = await em.findOne(User_1.User, {
-            email: options.email
-        });
+    async login(options, { req }) {
+        const user = await User_1.User.findOne({ where: {
+                email: options.email
+            } });
         if (!user) {
             return {
                 errors: [{

@@ -4,9 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 require("reflect-metadata");
-const core_1 = require("@mikro-orm/core");
 const constants_1 = require("./constants");
-const mikro_orm_config_1 = __importDefault(require("./mikro-orm.config"));
 const express_1 = __importDefault(require("express"));
 const server_1 = require("@apollo/server");
 const type_graphql_1 = require("type-graphql");
@@ -18,10 +16,23 @@ const user_1 = require("./resolvers/user");
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const ioredis_1 = __importDefault(require("ioredis"));
 const express_session_1 = __importDefault(require("express-session"));
+const typeorm_1 = require("typeorm");
+const Post_1 = require("./entities/Post");
+const User_1 = require("./entities/User");
 const main = async () => {
-    const orm = await core_1.MikroORM.init(mikro_orm_config_1.default);
-    await orm.getMigrator().up();
-    orm.em.fork();
+    const typeormConnection = new typeorm_1.DataSource({
+        type: "postgres",
+        host: constants_1.__dbHost__,
+        port: 5432,
+        username: constants_1.__dbUser__,
+        password: constants_1.__dbPassword__,
+        database: "reddited-db2",
+        synchronize: true,
+        logging: true,
+        entities: [Post_1.Post, User_1.User],
+    });
+    typeormConnection.initialize().then(() => {
+    }).catch(err => console.log(err));
     const app = (0, express_1.default)();
     const cors = require('cors');
     let redis = new ioredis_1.default();
@@ -57,7 +68,7 @@ const main = async () => {
         origin: ['http://localhost:3000'],
         credentials: true,
     }), (0, express4_1.expressMiddleware)(apolloServer, {
-        context: async ({ req, res }) => ({ em: orm.em, req, res, redis }),
+        context: async ({ req, res }) => ({ req, res, redis }),
     }));
     app.listen(8000, () => {
         console.log('server started on port 8000');

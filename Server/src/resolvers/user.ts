@@ -1,4 +1,3 @@
-import { RequiredEntityData } from "@mikro-orm/core"
 import { User } from "../entities/User"
 import { MyContext } from "src/types"
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql"
@@ -49,7 +48,7 @@ export class UserResolver {
     async changePassword(
         @Arg('token') token: string,
         @Arg('newPassword') newPassword: string,
-        @Ctx() {em, redis, req}: MyContext
+        @Ctx() {redis, req}: MyContext
     ):Promise<UserResponse> {
         if(newPassword.length <= 8) {
             return {
@@ -70,7 +69,8 @@ export class UserResolver {
             }
         }
         
-        const user = await em.findOne(User, {id: parseInt(userId)})
+        const userIdNum = parseInt(userId)
+        const user = await User.findOne({ where: {id: userIdNum}});
 
         if(!user) {
             return {
@@ -82,10 +82,8 @@ export class UserResolver {
         }
 
         const hashedPassword = await bcrypt.hash(newPassword, __saltRounds__)
-        
-        user.password = hashedPassword
-        
-        await em.persistAndFlush(user)
+                
+        await User.update({id: userIdNum}, {password: hashedPassword})
 
         await redis.del(key)
 
@@ -98,11 +96,11 @@ export class UserResolver {
     @Mutation(() => Boolean)
     async forgotPassword(
         @Arg('email') email: string,
-        @Ctx() { em, redis }: MyContext
+        @Ctx() { redis }: MyContext
     ) {
-        const user = await em.findOne(User, {
+        const user = await User.findOne({ where: {
             email: email
-        })
+        }})
 
         if(!user) {
             return true
@@ -120,20 +118,20 @@ export class UserResolver {
 
     @Query(() => User, {nullable: true})
     async user(
-       @Ctx() { req, em }: MyContext 
+       @Ctx() { req }: MyContext 
     ) {
         if(!req.session!.userId) {
             return null
         }
 
-        const user = await em.findOne(User, {id: req.session!.userId})
+        const user = await User.findOne({where: {id: req.session!.userId}})
         return user
     }
 
     @Mutation(() => UserResponse)
     async register(
         @Arg('options', () => UserPasswordInput) options: UserPasswordInput,
-        @Ctx() { em, req }: MyContext
+        @Ctx() { req }: MyContext
     ): Promise<UserResponse> {
         try {
             const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -174,13 +172,11 @@ export class UserResolver {
     
             const hashedPassword = await bcrypt.hash(options.password, __saltRounds__);
     
-            const user = em.create(User, {
+            const user = await User.create({
                 username: options.username,
                 email: options.email,
                 password: hashedPassword
-            } as RequiredEntityData<User>);
-    
-            await em.persistAndFlush(user);
+            }).save();
     
             req.session!.userId = user.id;
     
@@ -209,11 +205,11 @@ export class UserResolver {
     @Mutation(() => UserResponse)
     async login(
         @Arg('options', () => UserLoginInput) options: UserLoginInput,
-        @Ctx() { em, req }: MyContext
+        @Ctx() { req }: MyContext
     ): Promise<UserResponse> {
-        const user = await em.findOne(User, {
+        const user = await User.findOne({where: {
             email: options.email
-        })
+        }})
 
         if(!user) {
             return {
