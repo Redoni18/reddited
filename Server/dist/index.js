@@ -26,7 +26,7 @@ const main = async () => {
         port: 5432,
         username: constants_1.__dbUser__,
         password: constants_1.__dbPassword__,
-        database: "reddited-db2",
+        database: constants_1.__dbName2__,
         synchronize: true,
         logging: true,
         entities: [Post_1.Post, User_1.User],

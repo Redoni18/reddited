@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { __cookieName__, __dbHost__, __dbName__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
+import { __cookieName__, __dbHost__, __dbName2__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
 import express from "express"
 import { ApolloServer } from "@apollo/server"
 import { buildSchema } from "type-graphql"
@@ -25,7 +25,7 @@ const main = async () => {
         port: 5432,
         username: __dbUser__,
         password: __dbPassword__,
-        database: "reddited-db2",
+        database: __dbName2__,
         synchronize: true,
         logging: true,
         entities: [Post, User],

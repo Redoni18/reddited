@@ -25,10 +25,6 @@
   },
   "dependencies": {
     "@apollo/server": "^4.9.3",
-    "@mikro-orm/cli": "^5.7.14",
-    "@mikro-orm/core": "^5.7.14",
-    "@mikro-orm/migrations": "^5.7.14",
-    "@mikro-orm/postgresql": "^5.7.14",
     "@types/bcrypt": "^5.0.0",
     "@types/ioredis": "^5.0.0",
     "bcrypt": "^5.1.1",
@@ -45,12 +41,5 @@
     "type-graphql": "^2.0.0-beta.3",
     "typeorm": "^0.3.17",
     "uuid": "^9.0.1"
-  },
-  "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
-    ]
   }
 }
