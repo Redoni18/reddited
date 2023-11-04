@@ -93,7 +93,7 @@ const Register: React.FC<RegisterProps> = ({}) => {
     };
 
     return (
-        <Wrapper variant="regular" className="flex items-center h-full">
+        <Wrapper variant="small" className="flex items-center h-full">
             <Card className="w-3/4 mx-auto items-center">
                 <CardHeader className="space-y-1 text-center">
                     <CardTitle className="text-2xl">Create an account</CardTitle>
