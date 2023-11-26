@@ -26,15 +26,18 @@ const main = async () => {
         username: __dbUser__,
         password: __dbPassword__,
         database: __dbName2__,
-        synchronize: true,
+        synchronize: false,
         logging: true,
         entities: [Post, User],
+        migrations: [],
+        migrationsTableName: "typeorm-migrations",
     })
 
+    
     typeormConnection.initialize().then(() => {
         //initialized
     }).catch(err => console.log(err))
-
+    
     const app = express();
     const cors = require('cors')
 

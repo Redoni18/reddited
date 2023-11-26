@@ -27,9 +27,11 @@ const main = async () => {
         username: constants_1.__dbUser__,
         password: constants_1.__dbPassword__,
         database: constants_1.__dbName2__,
-        synchronize: true,
+        synchronize: false,
         logging: true,
         entities: [Post_1.Post, User_1.User],
+        migrations: [],
+        migrationsTableName: "typeorm-migrations",
     });
     typeormConnection.initialize().then(() => {
     }).catch(err => console.log(err));
