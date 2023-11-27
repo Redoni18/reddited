@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { __cookieName__, __dbHost__, __dbName2__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
+import { __cookieName__, __dbHost__, __dbName__, __dbPassword__, __dbUser__, __prod__, __secret__ } from "./constants";
 import express from "express"
 import { ApolloServer } from "@apollo/server"
 import { buildSchema } from "type-graphql"
@@ -13,26 +13,11 @@ import RedisStore from "connect-redis"
 import Redis from "ioredis"
 import session from "express-session"
 import { MyContext } from './types';
-import { DataSource } from "typeorm";
-import { Post } from "./entities/Post";
-import { User } from "./entities/User";
+import datasource from './datasource';
 
 const main = async () => {
 
-    const typeormConnection = new DataSource({
-        type: "postgres",
-        host: __dbHost__,
-        port: 5432,
-        username: __dbUser__,
-        password: __dbPassword__,
-        database: __dbName2__,
-        synchronize: false,
-        logging: true,
-        entities: [Post, User],
-        migrations: [],
-        migrationsTableName: "typeorm-migrations",
-    })
-
+    const typeormConnection = datasource
     
     typeormConnection.initialize().then(() => {
         //initialized

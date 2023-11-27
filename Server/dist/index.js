@@ -16,23 +16,9 @@ const user_1 = require("./resolvers/user");
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const ioredis_1 = __importDefault(require("ioredis"));
 const express_session_1 = __importDefault(require("express-session"));
-const typeorm_1 = require("typeorm");
-const Post_1 = require("./entities/Post");
-const User_1 = require("./entities/User");
+const datasource_1 = __importDefault(require("./datasource"));
 const main = async () => {
-    const typeormConnection = new typeorm_1.DataSource({
-        type: "postgres",
-        host: constants_1.__dbHost__,
-        port: 5432,
-        username: constants_1.__dbUser__,
-        password: constants_1.__dbPassword__,
-        database: constants_1.__dbName2__,
-        synchronize: false,
-        logging: true,
-        entities: [Post_1.Post, User_1.User],
-        migrations: [],
-        migrationsTableName: "typeorm-migrations",
-    });
+    const typeormConnection = datasource_1.default;
     typeormConnection.initialize().then(() => {
     }).catch(err => console.log(err));
     const app = (0, express_1.default)();

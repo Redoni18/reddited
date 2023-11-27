@@ -8,7 +8,10 @@
     "dev": "nodemon dist/index.js",
     "start": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "typeorm": "typeorm-ts-node-esm"
+    "typeorm": "ts-node ./node_modules/typeorm/cli",
+    "migration:run": "typeorm -d ./dist/datasource.js migration:run",
+    "migration:generate": "cd ./src/migrations && typeorm-ts-node-commonjs -d ../datasource.ts migration:generate",
+    "migration:create":"cd ./src/migrations && typeorm-ts-node-commonjs migration:create"
   },
   "keywords": [],
   "author": "",
